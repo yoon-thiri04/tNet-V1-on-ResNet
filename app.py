@@ -4,16 +4,15 @@ import torch
 from torchvision import transforms, models
 import torch.nn as nn
 
-# Define your ResNet18 model
 
 NUM_CLASSES = 10  
 model = models.resnet18(pretrained=True)
 
-# Freeze all layers except the last FC layer
+# Freezing all layers except the last FC layer
 for param in model.parameters():
     param.requires_grad = False
 
-# Replace FC layer (must match training)
+# Replace the FC layer
 model.fc = nn.Sequential(
     nn.Linear(model.fc.in_features, 256),
     nn.ReLU(),
@@ -21,12 +20,11 @@ model.fc = nn.Sequential(
     nn.Linear(256, NUM_CLASSES)
 )
 
-# Load your trained weights
+# load the model weight
 model.load_state_dict(torch.load("trashNet_model.pth", map_location='cpu'))
-model.eval()  # set to evaluation mode
+model.eval()  
 
 # Preprocessing
-
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -34,13 +32,12 @@ transform = transforms.Compose([
 ])
 
 #  Class labels
-
 class_names = [
     "battery", "biological", "cardboard", "clothes", "glass",
     "metal", "paper", "plastic", "shoes", "trash"
 ]
 
-# Map to reusable / non-reusable
+# Just a sample default map to reusable / non-reusable
 reusable_classes = ["cardboard", "clothes", "glass", "metal", "paper", "plastic", "shoes"]
 
 
@@ -59,14 +56,12 @@ elif camera_photo:
 if image:
     st.image(image, caption="Input Image", use_container_width=True)
     input_tensor = transform(image).unsqueeze(0)
-
-    # Prediction
+    
     with torch.no_grad():
         outputs = model(input_tensor)
         _, pred = torch.max(outputs, 1)
         class_label = class_names[pred.item()]
         reusable_label = "Reusable" if class_label in reusable_classes else "Non-Reusable"
 
-    # Display results
     st.success(f"Predicted class: **{class_label}**")
     st.info(f"Category: **{reusable_label}**")
