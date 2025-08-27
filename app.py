@@ -6,7 +6,7 @@ import torch.nn as nn
 
 
 NUM_CLASSES = 10  
-model = models.resnet18(pretrained=True)
+model = models.resnet18(pretrained=False)
 
 # Freezing all layers except the last FC layer
 for param in model.parameters():
